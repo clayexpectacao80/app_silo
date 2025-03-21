@@ -125,6 +125,46 @@ def carregar_usuarios():
     with open(USUARIOS_FILE, "r") as f:
         return json.load(f)
 
+def criar_novo_usuario(e, page):
+    # Função para criar um novo usuário
+    def confirmar_criacao_usuario(e):
+        usuario = campo_usuario.value
+        senha = campo_senha.value
+
+        if usuario and senha:
+            usuarios = carregar_usuarios()
+            if usuario not in usuarios:
+                usuarios[usuario] = senha
+                with open(USUARIOS_FILE, "w") as f:
+                    json.dump(usuarios, f, indent=4)
+                page.snack_bar = ft.SnackBar(ft.Text(f"Usuário {usuario} criado com sucesso!"), bgcolor="green")
+                page.snack_bar.open = True
+                page.update()
+                page.dialog.open = False
+                page.update()
+            else:
+                page.snack_bar = ft.SnackBar(ft.Text(f"Usuário {usuario} já existe!"), bgcolor="red")
+                page.snack_bar.open = True
+                page.update()
+        else:
+            page.snack_bar = ft.SnackBar(ft.Text("Por favor, preencha todos os campos!"), bgcolor="red")
+            page.snack_bar.open = True
+            page.update()
+
+    # Campos para o formulário de criação de usuário
+    campo_usuario = ft.TextField(label="Novo Usuário")
+    campo_senha = ft.TextField(label="Senha", password=True)
+
+    # Pop-up para confirmação da criação do usuário
+    popup = ft.AlertDialog(
+        title=ft.Text("Criar Novo Usuário"),
+        content=ft.Column([campo_usuario, campo_senha]),
+        actions=[ft.TextButton("Confirmar", on_click=confirmar_criacao_usuario)]
+    )
+    page.dialog = popup
+    popup.open = True
+    page.update()
+
 def pagina_principal(page: ft.Page):
     page.clean()
     page.title = "Controle de Pagamentos"
@@ -141,7 +181,7 @@ def pagina_principal(page: ft.Page):
     campo_lote = ft.TextField(label="Lote", width=150)
     campo_pesquisa_lote = ft.TextField(label="Pesquisar por Lote", width=150)
 
-    tabela = ft.DataTable(columns=[
+    tabela = ft.DataTable(columns=[  
         ft.DataColumn(ft.Text("Material")),
         ft.DataColumn(ft.Text("Tipo")),
         ft.DataColumn(ft.Text("Quantidade")),
@@ -155,6 +195,7 @@ def pagina_principal(page: ft.Page):
     
     botao_adicionar = ft.ElevatedButton(text="Adicionar", on_click=lambda e: adicionar_movimentacao(e, page, campo_material, dropdown_tipo, campo_quantidade, campo_data, campo_lote, tabela, dados_movimentacoes))
     botao_exportar = ft.ElevatedButton(text="Exportar para Excel", on_click=lambda e: exportar_para_excel(dados_movimentacoes))
+    botao_criar_usuario = ft.ElevatedButton(text="Criar Novo Usuário", on_click=lambda e: criar_novo_usuario(e, page))  # Novo botão
     
     # Função de pesquisa por lote
     def pesquisar_lote(e):
@@ -168,7 +209,7 @@ def pagina_principal(page: ft.Page):
             ft.Text("Controle de Pagamentos", size=24, weight=ft.FontWeight.BOLD),
             ft.Row([campo_material, dropdown_tipo, campo_quantidade]),
             ft.Row([campo_data, campo_lote]),
-            ft.Row([campo_pesquisa_lote, botao_adicionar, botao_exportar]),
+            ft.Row([campo_pesquisa_lote, botao_adicionar, botao_exportar, botao_criar_usuario]),  # Adicionando o botão de criar usuário
             ft.Text("Movimentações", size=20, weight=ft.FontWeight.BOLD),
             tabela
         ])
