@@ -3,6 +3,9 @@ import json
 import os
 import pandas as pd
 from datetime import datetime
+import openpyxl
+
+
 
 DADOS_FILE = "movimentacoes.json"
 USUARIOS_FILE = "usuarios.json"
